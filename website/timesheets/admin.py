@@ -11,7 +11,7 @@ class ContentTabelInline(admin.TabularInline):
 class TabelAdmin(admin.ModelAdmin):
     list_display = ('__str__','unit', 't_month', 't_year')
     list_filter = ('unit', 't_month', 't_year')
-    inlines = (ContentTabelInline)
+    inlines = (ContentTabelInline, )
 
 
 @admin.register(ContentTabel)

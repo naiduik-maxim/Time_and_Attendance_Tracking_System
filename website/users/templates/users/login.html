@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Вхід у систему{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <form method="post" style="width: 100%; max-width: 400px;">
+        <h2 style="text-align: center; margin-bottom: 1.5rem;">Авторизація</h2>
+        
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div class="messages">
+                <li class="error" style="list-style: none;">Неправильний логін або пароль.</li>
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+        {% endfor %}
+        
+        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Увійти</button>
+    </form>
+</div>
+{% endblock %}

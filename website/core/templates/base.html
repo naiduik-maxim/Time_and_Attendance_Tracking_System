@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Система обліку часу{% endblock %}</title>
+    
+    <!-- Підключення вашого кастомного CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo">TimeTracker</a>
+            <nav class="main-nav">
+    <ul>
+        {% if user.is_authenticated %}
+            <li><a href="#">Головна</a></li>
+            <li><a href="#">Підрозділи</a></li>
+            <li><a href="#">Працівники</a></li>
+            <li><a href="#">Табелі</a></li>
+            <li><a href="#">Довідки</a></li>
+            <li>
+                <form action="{% url 'logout' %}" method="post" style="padding: 0; margin: 0; box-shadow: none; background: transparent;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" style="background-color: var(--error-color);">
+                        Вийти ({{ user.username }})
+                    </button>
+                </form>
+            </li>
+        {% else %}
+            <li><a href="{% url 'login' %}" class="btn">Увійти</a></li>
+        {% endif %}
+    </ul>
+</nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; Всі права захищено.</p>
+        </div>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

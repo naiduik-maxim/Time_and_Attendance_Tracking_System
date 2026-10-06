@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Структура підрозділів{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Підрозділи компанії</h2>
+    
+    {% if user.is_superuser or 'Managers' in user.groups.all|stringformat:"s" %}
+        <a href="{% url 'unit_create' %}" class="btn" style="background-color: var(--success-color);">+ Додати підрозділ</a>
+    {% endif %}
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Код</th>
+            <th>Назва підрозділу</th>
+            <th>Керівник</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for unit in units %}
+            <tr>
+                <td>{{ unit.code }}</td>
+                <td>{{ unit.title }}</td>
+                <td>{{ unit.manager|default:"Не призначено" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center;">Підрозділи ще не створені.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

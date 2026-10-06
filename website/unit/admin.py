@@ -6,7 +6,7 @@ from workers.models import Worker
 class WorkerInline(admin.TabularInline):
     model = Worker
     extra = 0
-    fields = ('tabel_num', 'surname', 'first_name',' post', 'date_joined')
+    fields = ('tabel_num', 'surname', 'firstname', 'date_joined')
     show_change_link = True
 
 
@@ -14,4 +14,4 @@ class WorkerInline(admin.TabularInline):
 class UnitAdmin(admin.ModelAdmin):
     list_display = ('title', 'code', 'manager', 'address', 'count_workers')
     search_fields = ('title', 'code')
-    inlines = WorkerInline
+    inlines = (WorkerInline,)

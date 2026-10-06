@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Найняти працівника{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; margin-top: 2rem;">
+    <form method="post" style="width: 100%; max-width: 500px;">
+        <h2 style="text-align: center; margin-bottom: 1.5rem;">Реєстрація нового працівника</h2>
+        
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div style="margin-bottom: 15px;">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <span style="color: var(--error-color); font-size: 0.85rem;">{{ field.errors|striptags }}</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+            <a href="{% url 'manager_dashboard' %}" class="btn" style="background-color: #95a5a6;">Скасувати</a>
+            <button type="submit" class="btn">Зберегти працівника</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

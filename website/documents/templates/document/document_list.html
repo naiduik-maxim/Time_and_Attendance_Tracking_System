@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Мої довідки та відсутності{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Мої документи</h2>
+    <a href="{% url 'document_create' %}" class="btn">Додати новий документ</a>
+</div>
+
+{% if documents %}
+    <table>
+        <thead>
+            <tr>
+                <th>Тип відсутності</th>
+                <th>Початок</th>
+                <th>Кінець</th>
+                <th>Кількість днів</th>
+                <th>Опис (Причина)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+                <tr>
+                    <td>{{ doc.type_missing }}</td>
+                    <td>{{ doc.date_start|date:"d.m.Y" }}</td>
+                    <td>{{ doc.date_end|date:"d.m.Y" }}</td>
+                    <td>{{ doc.count_day }}</td>
+                    <td>{{ doc.description|default:"-" }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p style="text-align: center; margin-top: 2rem; color: #7f8c8d;">
+        У вас ще немає завантажених документів.
+    </p>
+{% endif %}
+{% endblock %}
