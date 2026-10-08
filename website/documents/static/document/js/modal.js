@@ -21,11 +21,87 @@ document.addEventListener("DOMContentLoaded", function(){
     const docForm = document.querySelector('#documentModal form');
     const typeInput = document.getElementById('id_type_missing');
     const limitWarning = document.getElementById('limit-warning');
+    const filterTypeSelect = document.getElementById('filterType');
+    const tbody = document.getElementById('documentTableBody');
+    const sortableHeaders = document.querySelectorAll('th.sortable');
     const formEl = document.getElementById('documentForm');
     if (!formEl) return;
 
     let vacationLeft = parseInt(formEl.getAttribute('data-vacation-left')) || 0;
     let sickLeft = parseInt(formEl.getAttribute('data-sick-left')) || 0;
+
+    if (filterTypeSelect && typeInput) {
+        Array.from(typeInput.options).forEach(opt => {
+            if (opt.value) {
+                const newOpt = document.createElement('option');
+                newOpt.value = opt.text.trim();
+                newOpt.textContent = opt.text.trim();
+                newOpt.style.color = '#2c3e50';
+                filterTypeSelect.appendChild(newOpt);
+            }
+        });
+    }
+
+    filterTypeSelect.addEventListener('change', function() {
+        const selected = this.value;
+        const rows = tbody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const typeCellText = row.cells[0].textContent.trim();
+            if(selected === 'all' || typeCellText === selected){
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    function parseDate(dateStr) {
+        const parts = dateStr.trim().split('.');
+        if(parts.length != 3) return 0;
+        return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+    }
+
+    sortableHeaders.forEach(headers => {
+        headers.addEventListener('click', function() {
+            const colIndex = parseInt(this.getAttribute('data-column'));
+            const dataType = this.getAttribute('data-type');
+
+            const currentOrder = this.getAttribute('data-order');
+            const newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+
+            sortableHeaders.forEach(h => {
+                h.removeAttribute('data-order');
+                h.querySelector('.sort-icon').textContent = '↕';
+            });
+
+            this.setAttribute('data-order', newOrder);
+            this.querySelector('.sort-icon').textContent = newOrder === 'desc' ? '↓' : '↑';
+
+            const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+
+            rowsArray.sort((rowA, rowB) => {
+                const cellA = rowA.cells[colIndex].textContent.trim();
+                const cellB = rowB.cells[colIndex].textContent.trim();
+
+                let valA, valB;
+
+                if (dataType === 'number') {
+                    valA = parseInt(cellA) || 0;
+                    valB = parseInt(cellB) || 0;
+                } else if (dataType === 'date') {
+                    valA = parseDate(cellA);
+                    valB = parseDate(cellB);
+                }
+
+                if (valA < valB) return newOrder === 'desc' ? 1 : -1;
+                if (valA > valB) return newOrder === 'desc' ? -1 : 1;
+                return 0;
+            });
+
+            rowsArray.forEach(row => tbody.appendChild(row));
+        });
+    });
 
     function checkLimits() {
         if (!typeInput || !countDayInput || !limitWarning) return;
