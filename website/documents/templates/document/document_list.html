@@ -1,25 +1,63 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}Мої довідки та відсутності{% endblock %}
 
 {% block content %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/uk.js"></script>
+
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2>Мої документи</h2>
-    <a href="{% url 'document_create' %}" class="btn">Додати новий документ</a>
+    <button onclick="openModal()" class="btn">+ Додати новий документ</button>
+</div>
+
+<div id="documentModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: var(--primary-color);">Новий документ</h3>
+            <button onclick="closeModal()" style="border: none; background: transparent; font-size: 1.5rem; cursor: pointer; color: var(--error-color);">&times;</button>
+        </div>
+        
+        <form action="{% url 'document_create' %}" method="post" id="documentForm" 
+            data-vacation-left="{{ vacation_left }}" 
+            data-sick-left="{{ sick_left }}" 
+            data-booked-dates="{{ booked_dates }}"
+            style="box-shadow: none; padding: 0; margin: 0; max-width: 100%;" novalidate>
+            
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div style="margin-bottom: 15px;">
+                    <div id="error_{{ field.name }}" class="error-msg"></div>
+                    <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 5px;">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+
+            <div id="limit-warning" style="color: #f39c12; font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease;"></div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="button" onclick="closeModal()" class="btn" style="background-color: #95a5a6;">Скасувати</button>
+                <button type="submit" class="btn" style="background-color: var(--success-color);">Зберегти</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 {% if documents %}
-    <table>
+    <table id="documentTable">
         <thead>
             <tr>
                 <th>Тип відсутності</th>
                 <th>Початок</th>
                 <th>Кінець</th>
-                <th>Кількість днів</th>
-                <th>Опис (Причина)</th>
+                <th>Дні</th>
+                <th>Опис</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="documentTableBody">
             {% for doc in documents %}
                 <tr>
                     <td>{{ doc.type_missing }}</td>
@@ -32,8 +70,10 @@
         </tbody>
     </table>
 {% else %}
-    <p style="text-align: center; margin-top: 2rem; color: #7f8c8d;">
-        У вас ще немає завантажених документів.
+    <p id="noDocumentsMsg">
+    У вас ще немає завантажених документів.
     </p>
 {% endif %}
+
+<script src="{% static 'document/js/modal.js' %}"></script>
 {% endblock %}
