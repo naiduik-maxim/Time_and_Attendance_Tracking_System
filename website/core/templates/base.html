@@ -8,6 +8,7 @@
     
     <!-- Підключення вашого кастомного CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     
     {% block extra_head %}{% endblock %}
 </head>
@@ -18,18 +19,20 @@
             <nav class="main-nav">
     <ul>
         {% if user.is_authenticated %}
+        
             <li><a href="#">Головна</a></li>
             <li><a href="#">Підрозділи</a></li>
             <li><a href="#">Працівники</a></li>
             <li><a href="#">Табелі</a></li>
             <li><a href="#">Довідки</a></li>
             <li>
-                <form action="{% url 'logout' %}" method="post" style="padding: 0; margin: 0; box-shadow: none; background: transparent;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn" style="background-color: var(--error-color);">
-                        Вийти ({{ user.username }})
-                    </button>
-                </form>
+                <button
+                    type="button"
+                    class="btn"
+                    data-profile-url="{% url 'profile' %}"
+                >
+                    Мій профіль
+                </button>
             </li>
         {% else %}
             <li><a href="{% url 'login' %}" class="btn">Увійти</a></li>
@@ -57,6 +60,27 @@
             <p>&copy; Всі права захищено.</p>
         </div>
     </footer>
+
+    {% if user.is_authenticated %}
+        <dialog
+            id="profile-dialog"
+            class="profile-dialog"
+            aria-labelledby="profile-title"
+        >
+            <button
+                type="button"
+                class="profile-close"
+                data-profile-close
+                aria-label="Закрити"
+            >
+                ×
+            </button>
+
+            <div id="profile-body"></div>
+        </dialog>
+    {% endif %}
+
+    <script src="{% static 'js/profile.js' %}" defer></script>
 
     {% block extra_scripts %}{% endblock %}
 </body>

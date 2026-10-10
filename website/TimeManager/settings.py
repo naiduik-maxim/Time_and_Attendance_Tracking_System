@@ -118,6 +118,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+DEFAULT_FROM_EMAIL = "noreply@example.com"
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
@@ -139,9 +141,20 @@ STATIC_URL = 'static/'
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+PASSWORD_RESET_TIMEOUT = 3600
 
 MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": os.environ["EMAIL_HOST"],
+            "port": int(os.environ.get("EMAIL_PORT", "587")),
+            "username": os.environ["EMAIL_HOST_USER"],
+            "password": os.environ["EMAIL_HOST_PASSWORD"],
+            "use_tls": True,
+            "timeout": 10,
+        },
     },
 }
+
+DEFAULT_FROM_EMAIL = os.environ["DEFAULT_FROM_EMAIL"]

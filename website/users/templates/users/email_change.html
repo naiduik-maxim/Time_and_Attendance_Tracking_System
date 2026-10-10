@@ -1,0 +1,25 @@
+
+{% extends "base.html" %}
+
+{% block title %}Зміна email{% endblock %}
+
+{% block content %}
+<h2>Зміна email</h2>
+
+<p>Поточна адреса: {{ request.user.email }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button class="btn" type="submit">
+        Надіслати підтвердження
+    </button>
+</form>
+
+<p>
+    <a href="{% url 'password_reset' %}">
+        Змінити пароль через email
+    </a>
+</p>
+{% endblock %}

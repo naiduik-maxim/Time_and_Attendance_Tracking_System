@@ -1,0 +1,112 @@
+<h2 id="profile-title">Мій профіль</h2>
+
+{% if notice %}
+    <p role="status">{{ notice }}</p>
+{% endif %}
+
+<details open>
+    <summary>Загальна інформація</summary>
+
+    <dl class="profile-info">
+        <dt>Ім’я</dt>
+        <dd>
+            {% if worker %}
+                {{ worker.surname }}
+                {{ worker.firstname }}
+                {{ worker.lastname }}
+            {% else %}
+                {{ user.get_full_name|default:user.username }}
+            {% endif %}
+        </dd>
+
+        <dt>Логін</dt>
+        <dd>{{ user.username }}</dd>
+
+        <dt>Email</dt>
+        <dd>{{ user.email|default:"Не вказано" }}</dd>
+
+        <dt>Ролі</dt>
+        <dd>
+            {% if user.is_superuser %}
+                Адміністратор
+            {% endif %}
+
+            {% for group in user.groups.all %}
+                {{ group.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                {% if not user.is_superuser %}
+                    Не призначено
+                {% endif %}
+            {% endfor %}
+        </dd>
+
+        <dt>Дата реєстрації</dt>
+        <dd>{{ user.date_joined|date:"d.m.Y" }}</dd>
+
+        <dt>Ліміт відпустки</dt>
+        <dd>{{ user.vacation_limit }} днів</dd>
+
+        <dt>Ліміт лікарняних</dt>
+        <dd>{{ user.sick_limit }} днів</dd>
+
+        {% if worker %}
+            <dt>Посада</dt>
+            <dd>{{ worker.post }}</dd>
+
+            <dt>Підрозділ</dt>
+            <dd>{{ worker.unit.title }}</dd>
+
+            <dt>Табельний номер</dt>
+            <dd>{{ worker.tabel_num }}</dd>
+
+            <dt>Телефон</dt>
+            <dd>{{ worker.phone_num }}</dd>
+
+            <dt>Дата прийому</dt>
+            <dd>{{ worker.date_joined|date:"d.m.Y" }}</dd>
+        {% endif %}
+    </dl>
+</details>
+
+<details {% if email_form.is_bound %}open{% endif %}>
+    <summary>Змінити email</summary>
+
+    <form
+        method="post"
+        action="{% url 'profile' %}"
+        data-profile-form
+    >
+        {% csrf_token %}
+        <input type="hidden" name="action" value="email">
+
+        {{ email_form.as_p }}
+
+        <button class="btn" type="submit">
+            Надіслати підтвердження
+        </button>
+    </form>
+</details>
+
+<details {% if password_form.is_bound %}open{% endif %}>
+    <summary>Змінити пароль</summary>
+
+    <p>
+        Новий пароль ви встановите після переходу
+        за посиланням із листа.
+    </p>
+
+    <form
+        method="post"
+        action="{% url 'profile' %}"
+        data-profile-form
+    >
+        {% csrf_token %}
+        <input type="hidden" name="action" value="password">
+
+        {{ password_form.as_p }}
+
+        <button class="btn" type="submit">
+            Надіслати посилання
+        </button>
+    </form>
+</details>

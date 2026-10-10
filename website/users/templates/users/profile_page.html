@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Профіль</h1>
+
+    <button
+        type="button"
+        class="btn"
+        data-profile-url="{% url 'profile' %}"
+        data-profile-auto
+    >
+        Відкрити профіль
+    </button>
+{% endblock %}

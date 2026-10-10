@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <dialog
+        class="profile-dialog"
+        data-auto-dialog
+        aria-labelledby="email-title"
+    >
+        <h2 id="email-title">Підтвердження email</h2>
+
+        {% if new_email %}
+            <p>
+                Встановити адресу
+                <strong>{{ new_email }}</strong>?
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <button class="btn" type="submit">
+                    Підтвердити
+                </button>
+            </form>
+        {% else %}
+            <p>
+                Посилання недійсне, прострочене або вже використане.
+                Увійдіть у правильний обліковий запис
+                або створіть новий запит.
+            </p>
+        {% endif %}
+
+        <a href="{% url 'profile_page' %}">
+            Повернутися до профілю
+        </a>
+    </dialog>
+{% endblock %}

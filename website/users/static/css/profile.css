@@ -1,0 +1,72 @@
+.profile-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(640px, 94vw);
+    max-height: 85vh;
+    overflow: auto;
+    padding: 24px;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px #0004;
+}
+
+.profile-dialog::backdrop {
+    background: #172b4dcc;
+}
+
+.profile-close {
+    float: right;
+    padding: 4px 12px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.profile-dialog details {
+    margin: 16px 0;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+}
+
+.profile-dialog summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.profile-info {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 8px 16px;
+    margin: 16px 0;
+}
+
+.profile-info dt {
+    color: #667;
+}
+
+.profile-info dd {
+    overflow-wrap: anywhere;
+}
+
+.profile-dialog form {
+    box-shadow: none;
+    padding: 0;
+}
+
+.profile-dialog .errorlist {
+    color: var(--error-color);
+    padding-left: 20px;
+}
+
+@media (max-width: 480px) {
+    .profile-info {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .profile-info dd {
+        margin-bottom: 8px;
+    }
+}
