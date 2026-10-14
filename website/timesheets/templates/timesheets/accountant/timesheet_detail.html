@@ -1,0 +1,139 @@
+{% extends "timesheets/accountant/base.html" %}
+
+{% block title %}Перегляд табеля{% endblock %}
+
+{% block content %}
+
+<div class="top-actions">
+    <a href="{% url 'timesheets:department_timesheets' timesheet.unit.pk %}"
+       class="btn btn-secondary">
+        ← Назад до табелів
+    </a>
+</div>
+
+<h1 class="page-title">
+    Табель №{{ timesheet.pk }}
+</h1>
+
+<p class="subtitle">
+    {{ timesheet.unit.title }} —
+    {{ timesheet.t_month|stringformat:"02d" }}.{{ timesheet.t_year }}
+</p>
+
+<div class="stats">
+    <div class="stat-card">
+        <p>Працівників</p>
+        <h3>{{ workers_count }}</h3>
+    </div>
+
+    <div class="stat-card">
+        <p>Усього пропущених днів</p>
+        <h3>{{ total_skip_days }}</h3>
+    </div>
+
+    <div class="stat-card">
+        <p>Без запису в табелі</p>
+        <h3>{{ missing_records_count }}</h3>
+    </div>
+</div>
+
+<div class="panel">
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Табельний номер</th>
+                    <th>ПІБ працівника</th>
+                    <th>Посада</th>
+                    <th>Пропуски</th>
+                    <th>Відпустка</th>
+                    <th>Лікарняний</th>
+                    <th>Відрядження</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for worker in workers %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+
+                    <td>
+                        {{ worker.tabel_num }}
+                    </td>
+
+                    <td>
+                        {{ worker.surname }}
+                        {{ worker.firstname }}
+                        {{ worker.lastname }}
+                    </td>
+
+                    <td>{{ worker.post }}</td>
+
+                    {% if worker.record_count %}
+                    <!-- Пропуски -->
+                        <td>
+                            {% if worker.total_skip_days > 0 %}
+                                <span class="badge badge-warning">
+                                    {{ worker.total_skip_days }} дн.
+                                </span>
+                            {% else %}
+                                <span class="badge">
+                                    0 дн.
+                                </span>
+                            {% endif %}
+                        </td>
+
+
+                        <!-- Відпустка -->
+                        <td>
+                            <span class="badge {% if worker.total_vacation > 0 %}badge-warning{% endif %}">
+                                {{ worker.total_vacation }} дн.
+                            </span>
+                        </td>
+
+                        <!-- Лікарняний -->
+                        <td>
+                            <span class="badge {% if worker.total_hospital > 0 %}badge-warning{% endif %}">
+                                {{ worker.total_hospital }} дн.
+                            </span>
+                        </td>
+
+                        <!-- Відрядження -->
+                        <td>
+                            <span class="badge {% if worker.total_assignment > 0 %}badge-warning{% endif %}">
+                                {{ worker.total_assignment }} дн.
+                            </span>
+                        </td>
+                    {% else %}
+                        <td colspan="4">
+                            <span class="badge badge-warning">
+                                Немає запису в табелі
+                            </span>
+                        </td>
+                    {% endif %}
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        У підрозділі немає працівників.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+{% endblock %}

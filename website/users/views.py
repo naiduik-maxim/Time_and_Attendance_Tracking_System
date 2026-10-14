@@ -19,7 +19,7 @@ class UserLoginView(LoginView):
             return reverse('admin:index')
             
         if user.groups.filter(name='Accountants').exists():
-            return reverse('accountant_unit_list') 
+            return reverse('timesheets:accountant_dashboard') 
             
         elif user.groups.filter(name='Managers').exists():
             return reverse('unit_list')

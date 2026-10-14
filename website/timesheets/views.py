@@ -1,68 +1,245 @@
-from django.views.generic import ListView, DetailView
-from django.http import Http404
+from django.views.generic import ListView, DetailView, View
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    UserPassesTestMixin,
+)
+from django.db.models import Count, Q, Sum, Value
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.mixins import UserPassesTestMixin
-from .models import Tabel, ContentTabel
-from unit.models import Unit
-# Create your views here.
+from django.contrib import messages
+from django.shortcuts import redirect
 
-class AccountUnitListView(UserPassesTestMixin, ListView):
-    model = Unit
-    template_name = 'tabel/unit_select.html'
-    context_object_name = 'units'
+from unit.models import Unit
+from workers.models import Worker
+from .models import Tabel
+from .services import sync_timesheet, TimesheetSyncError
+
+
+MONTH = [
+    (1, "Січень"),
+    (2, "Лютий"),
+    (3, "Березень"),
+    (4, "Квітень"),
+    (5, "Травень"),
+    (6, "Червень"),
+    (7, "Липень"),
+    (8, "Серпень"),
+    (9, "Вересень"),
+    (10, "Жовтень"),
+    (11, "Листопад"),
+    (12, "Грудень"),
+]
+
+
+class AccountantRequiredMixin(LoginRequiredMixin,UserPassesTestMixin):
+    raise_exception = True
 
     def test_func(self):
-        return self.request.user.is_superuser or self.request.user.groups.filter(name='Accountants').exists()
+        return Unit.objects.filter(
+            accountants=self.request.user
+        ).exists()
+
+
+class AccountantDashboardView(AccountantRequiredMixin,ListView):
+    model = Unit
+    template_name = 'timesheets/accountant/dashboard.html'
+    context_object_name = 'departments'
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        if not self.request.user.is_superuser:
-            qs = qs.filter(accountants = self.request.user)
+        return (
+            Unit.objects.filter(accountants=self.request.user)
+            .annotate(tabel_count=Count('tabels', distinct=True))
+            .order_by('title')
+        )
 
-        return qs
 
-class TableListView(UserPassesTestMixin, ListView):
+class DepartmentTimesheetsView(AccountantRequiredMixin, ListView):
     model = Tabel
-    template_name = 'tabel/tabel_list.html'
-    context_object_name = 'tabels'
+    template_name = 'timesheets/accountant/department.html'
+    context_object_name = 'timesheets'
 
-    ordering = ['-t_year', '-t_month']
+    def get_queryset(self):
+        self.department = get_object_or_404(
+            Unit.objects.filter(
+                accountants=self.request.user
+            ),
+            pk=self.kwargs['department_id'],
+        )
 
-    def test_func(self):
-        return self.request.user.is_superuser or self.request.user.groups.filter(name='Accountants').exists()
+        queryset = Tabel.objects.filter(
+            unit=self.department
+        )
 
-    def get_queryset(self, queryset = None):
+        self.selected_month = None
+        self.selected_year = None
 
-        self.unit = get_object_or_404(Unit, id=self.kwargs['unit_id'])
+        month = self.request.GET.get('month', '')
+        year = self.request.GET.get('yeat', '')
 
-        if not self.request.user.is_superuser:
-            if not self.unit.accountants.filter(id=self.request.user.id).exists():
-                raise Http404("У вас немає прав для перегляду табеля цього підрозділу")
+        if month.isdigit() and 1 <= int(month) <= 12:
+            self.selected_month = int(month)
+            queryset = queryset.filter(
+                t_month=self.selected_month
+            )
 
-        return Tabel.objects.filter(unit=self.unit).order_by('-t_year', '-t_month')
+        if year.isdigit() and 1900 <= int(year) <= 2100:
+            self.selected_year = int(year)
+            queryset = queryset.filter(
+                t_year=self.selected_year
+            )
 
-class TabelDetailView(UserPassesTestMixin, DetailView):
-    model = Tabel
-    template_name = 'tabel/tabel_detail.html'
-    context_object_name = 'tabel'
-
-    def test_func(self):
-            return self.request.user.is_superuser or self.request.user.groups.filter(name='Accountants').exists()
-
-
-    def get_object(self, queryset = None):
-        obj = super().get_object(queryset)
-
-        if not self.request.user.is_superuser:
-            if not obj.unit.accountants.filter(id=self.request.user.id).exists():
-                 raise Http404("У вас немає прав для перегляду табеля цього підрозділу")
-
-        return obj
-
+        return queryset.order_by("-t_year", "-t_month", "-pk")
 
     def get_context_data(self, **kwargs):
-         context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
-         context['records'] = ContentTabel.objects.filter(tabel=self.object).select_related('worker')
-         return context
+        context['department'] = self.department
+        context['months'] = MONTH
+        context["selected_month"] = self.selected_month
+        context["selected_year"] = self.selected_year 
+        context["years"] = (
+            Tabel.objects
+            .filter(unit=self.department)
+            .order_by("-t_year")
+            .values_list("t_year", flat=True)
+            .distinct()
+        )
 
+        return context
+
+
+class AccountantTimesheetDetailView(AccountantRequiredMixin, DetailView):
+    model = Tabel
+    template_name = "timesheets/accountant/timesheet_detail.html"
+    context_object_name = 'timesheet'
+
+    def get_queryset(self):
+        return (
+            Tabel.objects
+            .filter(unit__accountants=self.request.user)
+            .select_related("unit")
+        )
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        try:
+            sync_timesheet(self.object.pk)
+
+        except TimesheetSyncError as error:
+            messages.error(
+                request,
+                f"Не вдалося оновити табель: {error}"
+            )
+
+        context = self.get_context_data(
+            object=self.object
+        )
+
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        timesheet = self.object
+
+        workers = (
+            Worker.objects.filter(unit=timesheet.unit)
+            .annotate(
+                total_skip_days=Coalesce(
+                    Sum(
+                        "tabel_records__skip_days",
+                        filter=Q(
+                            tabel_records__tabel=timesheet
+                        ),
+                    ),
+                    Value(0),
+                ),
+                total_vacation=Coalesce(
+                    Sum(
+                        "tabel_records__vacation",
+                        filter=Q(
+                            tabel_records__tabel=timesheet
+                        ),
+                    ),
+                    Value(0),
+                ),
+                total_hospital=Coalesce(
+                    Sum(
+                        "tabel_records__hospital",
+                        filter=Q(
+                            tabel_records__tabel=timesheet
+                        ),
+                    ),
+                    Value(0),
+                ),
+                total_assignment=Coalesce(
+                    Sum(
+                        "tabel_records__assignment",
+                        filter=Q(
+                            tabel_records__tabel=timesheet
+                        ),
+                    ),
+                    Value(0),
+                ),
+                record_count=Count(
+                    "tabel_records",
+                    filter=Q(
+                        tabel_records__tabel=timesheet
+                    ),
+                ),
+            ).order_by('surname', 'firstname','lastname')
+        )
+        workers = list(workers)
+        print(workers[1])
+        context['workers'] = workers
+        context['workers_count'] = len(workers)
+        
+        context['missing_record_count'] = sum(
+            worker.record_count
+            for worker in workers
+        )
+
+        context["total_skip_days"] = sum(
+            worker.total_skip_days
+            for worker in workers
+        )
+        context["months"] = dict(MONTH)
+
+        return context
+
+
+class AccountantTimesheetSyncView(AccountantRequiredMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        tabel = get_object_or_404(
+            Tabel,
+            pk=pk,
+            unit__accountants=request.user,
+        )
+
+        try:
+            result = sync_timesheet(tabel.pk)
+
+        except TimesheetSyncError as error:
+            messages.error(
+                request,
+                f"Помилка синхронізації: {error}",
+            )
+
+        else:
+            messages.success(
+                request,
+                (
+                    "Табель успішно синхронізовано. "
+                    f"Створено записів: {result['created']}. "
+                    f"Оновлено: {result['updated']}. "
+                    f"Оброблено документів: {result['documents']}."
+                ),
+            )
+
+        return redirect(
+            "timesheets:accountant_timesheet_detail",
+            pk=tabel.pk,
+        )

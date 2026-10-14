@@ -1,0 +1,51 @@
+{% extends "timesheets/accountant/base.html" %}
+
+{% block title %}Кабінет бухгалтера{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title">Мої підрозділи</h1>
+
+<p class="subtitle">
+    Виберіть підрозділ для перегляду табелів обліку
+    робочого часу.
+</p>
+
+<div class="cards">
+
+    {% for department in departments %}
+
+    <div class="card">
+        <h3>{{ department.title }}</h3>
+
+        <p>
+            Код підрозділу:
+            <strong>{{ department.code }}</strong>
+        </p>
+
+        <p>
+            Керівник: {{ department.manager }}
+        </p>
+
+        <p>
+            Кількість табелів:
+            <strong>{{ department.tabel_count }}</strong>
+        </p>
+
+        <a class="btn"
+           href="{% url 'timesheets:department_timesheets' department.pk %}">
+            Переглянути табелі →
+        </a>
+    </div>
+
+    {% empty %}
+
+    <div class="panel empty-state">
+        Вам поки не призначено жодного підрозділу.
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

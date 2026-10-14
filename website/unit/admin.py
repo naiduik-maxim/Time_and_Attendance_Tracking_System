@@ -14,4 +14,5 @@ class WorkerInline(admin.TabularInline):
 class UnitAdmin(admin.ModelAdmin):
     list_display = ('title', 'code', 'manager', 'address', 'count_workers')
     search_fields = ('title', 'code')
+    filter_horizontal = ('accountants',)
     inlines = (WorkerInline,)

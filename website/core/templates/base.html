@@ -8,7 +8,7 @@
     
     <!-- Підключення вашого кастомного CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
     
     {% block extra_head %}{% endblock %}
 </head>
@@ -62,25 +62,12 @@
     </footer>
 
     {% if user.is_authenticated %}
-        <dialog
-            id="profile-dialog"
-            class="profile-dialog"
-            aria-labelledby="profile-title"
-        >
-            <button
-                type="button"
-                class="profile-close"
-                data-profile-close
-                aria-label="Закрити"
-            >
-                ×
-            </button>
-
+        <dialog id="profile-dialog" class="profile-dialog">
             <div id="profile-body"></div>
         </dialog>
     {% endif %}
 
-    <script src="{% static 'js/profile.js' %}" defer></script>
+    <script src="{% static 'users/js/profile.js' %}" defer></script>
 
     {% block extra_scripts %}{% endblock %}
 </body>

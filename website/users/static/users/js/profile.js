@@ -69,6 +69,25 @@
 
     });
 
+    document.addEventListener("click", function(event) {
+        const closeButton = event.target.closest("[data-profile-close]");
+
+        if (!closeButton) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const dialog = document.getElementById("profile-dialog");
+
+        if (dialog) {
+            if (dialog.open) {
+                dialog.close();
+            } else {
+                dialog.removeAttribute("open");
+            }
+        }
+    });
+
     modal?.querySelector('[data-profile-close]')
     .addEventListener('click', () => modal.close());
 

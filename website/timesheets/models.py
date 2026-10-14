@@ -35,6 +35,13 @@ class ContentTabel(models.Model):
     count_work_day = models.IntegerField(default=0, verbose_name="Робочі дні")
 
     class Meta:
-        db_table = 'content_tabel'
+        db_table = "content_tabel"
         verbose_name = "Запис табеля"
         verbose_name_plural = "Записи табеля"
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tabel", "worker"],
+                name="unique_worker_per_tabel",
+            ),
+        ]

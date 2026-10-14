@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/timesheet.css' %}">
+    <link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
+    <title>{% block title %}Бухгалтер{% endblock %}</title>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<header class="accountant-header">
+
+    <h2>TimeManager</h2>
+
+    <div class="accountant-header-actions">
+
+        <a href="{% url 'timesheets:accountant_dashboard' %}"
+           class="btn btn-secondary">
+            Головна
+        </a>
+
+        <button
+            type="button"
+            class="btn btn-secondary"
+            data-profile-url="{% url 'profile' %}">
+            Мій профіль
+        </button>
+
+    </div>
+
+</header>
+
+<main class="accountant-container">
+    {% block content %}{% endblock %}
+</main>
+
+<dialog id="profile-dialog" class="profile-dialog">
+    <div id="profile-body"></div>
+</dialog>
+
+<script src="{% static 'users/js/profile.js' %}"></script>
+
+</body>
+</html>
