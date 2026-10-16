@@ -13,6 +13,14 @@ class Tabel(models.Model):
         verbose_name = "Табель"
         verbose_name_plural = "Табелі"
 
+        constraints = [
+                models.UniqueConstraint(
+                    fields=["unit", "t_month", "t_year"],
+                    name="unique_unit_month_year_tabel",
+                )
+            ]
+
+
     def __str__(self):
         return f"Табель {self.t_month}/{self.t_year}"
 

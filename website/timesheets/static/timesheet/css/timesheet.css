@@ -267,3 +267,132 @@ tr:hover td {
         justify-content: flex-end;
     }
 }
+
+/* Пошук працівників */
+
+.timesheet-search {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.timesheet-search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    flex: 1;
+    min-width: 230px;
+    max-width: 480px;
+}
+
+.timesheet-search-field svg {
+    position: absolute;
+    left: 14px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.timesheet-search-field input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 44px;
+
+    padding: 10px 40px 10px 44px;
+
+    border: 1px solid #dbe3ef;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #1e293b;
+
+    font-size: 14px;
+    font-family: inherit;
+
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.timesheet-search-field input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+.timesheet-search-field input::placeholder {
+    color: #94a3b8;
+}
+
+.timesheet-search-count {
+    color: #64748b;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.timesheet-export-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.export-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    padding: 11px 17px;
+    border-radius: 9px;
+
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+
+    transition:
+        background 0.2s,
+        transform 0.2s;
+}
+
+.export-btn:hover {
+    color: white;
+    transform: translateY(-1px);
+}
+
+.export-btn svg {
+    flex-shrink: 0;
+}
+
+.export-pdf {
+    background: #dc2626;
+}
+
+.export-pdf:hover {
+    background: #b91c1c;
+}
+
+.export-excel {
+    background: #16834a;
+}
+
+.export-excel:hover {
+    background: #116638;
+}
+
+@media (max-width: 600px) {
+    .timesheet-export-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .export-btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+

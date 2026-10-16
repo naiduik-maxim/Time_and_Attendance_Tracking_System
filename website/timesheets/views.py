@@ -191,7 +191,6 @@ class AccountantTimesheetDetailView(AccountantRequiredMixin, DetailView):
             ).order_by('surname', 'firstname','lastname')
         )
         workers = list(workers)
-        print(workers[1])
         context['workers'] = workers
         context['workers_count'] = len(workers)
         
