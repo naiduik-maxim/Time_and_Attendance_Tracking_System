@@ -2,6 +2,7 @@
     const modal = document.getElementById('profile-dialog');
     const body = document.getElementById('profile-body');
     let busy = false;
+    let profileUrl = '';
 
     async function load(url, option = {}) {
         if (busy) return;
@@ -39,17 +40,19 @@
             }
 
             body.innerHTML = data.html;
-            body.querySelector('summary, input')?.focus();
+            (body.querySelector('[aria-invalid="true"]') || body.querySelector('summary, input:not([type="hidden"])'))?.focus();
         } catch {
             body.querySelector('[data-load-error]')?.remove();
 
             const error = document.createElement('p');
             error.dataset.loadError = '';
+            error.className = 'alert alert-error';
             error.setAttribute('role', 'alert');
             error.textContent =
                 'Не вдалося завантажити профіль. Спробуйте ще раз.';
 
             body.prepend(error);
+            body.querySelector('[data-profile-loading]')?.remove();
         } finally {
             buttons.forEach(button => button.disabled = false);
             busy = false;
@@ -58,14 +61,15 @@
 
     document.addEventListener('click', event => {
         const opener = event.target.closest('[data-profile-url]');
-        if (!opener || !modal) return;
+        if (!opener || !modal || busy) return;
 
         event.preventDefault();
-        body.textContent = 'Завантаження...';
+        profileUrl = opener.dataset.profileUrl;
+        body.innerHTML = '<div class="profile-card-header profile-loading-header"><h2>Мій профіль</h2><button type="button" class="profile-close-btn" data-profile-close aria-label="Закрити">&times;</button></div><p class="profile-loading" data-profile-loading role="status">Завантаження профілю…</p>';
 
         if (!modal.open) modal.showModal();
 
-        load(opener.dataset.profileUrl);
+        load(profileUrl);
 
     });
 
@@ -88,9 +92,6 @@
         }
     });
 
-    modal?.querySelector('[data-profile-close]')
-    .addEventListener('click', () => modal.close());
-
     modal?.addEventListener('submit', event => {
         const form = event.target;
 
@@ -98,7 +99,7 @@
 
         event.preventDefault();
 
-        load(form.getAttribute('action'), {
+        load(form.getAttribute('action') || profileUrl, {
             method: 'POST',
             body: new FormData(form)
             });

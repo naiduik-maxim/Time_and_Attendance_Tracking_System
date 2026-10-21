@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator
 from unit.models import Unit
 from django.conf import settings
 # Create your models here.
@@ -29,6 +30,11 @@ class Worker(models.Model):
     post = models.CharField(max_length=50, verbose_name="Посада")
     email = models.EmailField(max_length=255, verbose_name="Email")
     date_joined = models.DateField(verbose_name="Дата прийому на роботу") 
+    vacation_limit = models.PositiveSmallIntegerField(
+        default=24,
+        validators=[MaxValueValidator(365)],
+        verbose_name="Ліміт відпустки (днів)",
+    )
 
     class Meta:
         db_table = 'worker'

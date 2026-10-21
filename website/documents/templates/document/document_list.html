@@ -8,60 +8,63 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/uk.js"></script>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2>Мої документи</h2>
-    <button onclick="openModal()" class="btn">+ Додати новий документ</button>
+<div class="page-header">
+    <div>
+        <span class="eyebrow">Особистий кабінет</span>
+        <h1>Мої документи</h1>
+        <p class="page-subtitle">Відпустки, лікарняні та інші періоди відсутності</p>
+    </div>
+    <button type="button" onclick="openModal()" class="btn">+ Додати документ</button>
 </div>
 
-<div id="documentModal" class="modal-overlay">
+<div id="documentModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="document-modal-title">
     <div class="modal-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: var(--primary-color);">Новий документ</h3>
-            <button onclick="closeModal()" style="border: none; background: transparent; font-size: 1.5rem; cursor: pointer; color: var(--error-color);">&times;</button>
+        <div class="modal-header">
+            <h2 id="document-modal-title">Новий документ</h2>
+            <button type="button" onclick="closeModal()" class="icon-button" aria-label="Закрити">&times;</button>
         </div>
         
-        <form action="{% url 'document_create' %}" method="post" id="documentForm" 
+        <form action="{% url 'document_create' %}" method="post" id="documentForm" class="modal-form"
             data-vacation-left="{{ vacation_left }}" 
             data-sick-left="{{ sick_left }}" 
-            data-booked-dates="{{ booked_dates }}"
-            style="box-shadow: none; padding: 0; margin: 0; max-width: 100%;" novalidate>
+            data-booked-dates="{{ booked_dates }}" novalidate>
             
             {% csrf_token %}
             
             {% for field in form %}
-                <div style="margin-bottom: 15px;">
+                <div class="form-field">
                     <div id="error_{{ field.name }}" class="error-msg"></div>
-                    <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: 5px;">{{ field.label }}</label>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                 </div>
             {% endfor %}
 
-            <div id="limit-warning" style="color: #f39c12; font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; max-height: 0; opacity: 0; overflow: hidden; transition: all 0.3s ease;"></div>
+            <div id="limit-warning" class="limit-warning"></div>
             
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                <button type="button" onclick="closeModal()" class="btn" style="background-color: #95a5a6;">Скасувати</button>
-                <button type="submit" class="btn" style="background-color: var(--success-color);">Зберегти</button>
+            <div class="form-actions">
+                <button type="button" onclick="closeModal()" class="btn btn-secondary">Скасувати</button>
+                <button type="submit" class="btn">Зберегти</button>
             </div>
         </form>
     </div>
 </div>
 
-{% if documents %}
+<div class="table-wrapper">
     <table id="documentTable">
         <thead>
     <tr>
-        <th style="position: relative;">
-            <select id="filterType" style="background: transparent; color: white; border: none; font-weight: bold; font-size: inherit; font-family: inherit; cursor: pointer; outline: none; padding-right: 15px;">
-                <option value="all" style="color: #2c3e50;">Тип відсутності (Всі) ▾</option>
+        <th>
+            <select id="filterType" class="table-filter" aria-label="Фільтр за типом відсутності">
+                <option value="all">Тип відсутності (всі)</option>
             </select>
         </th>
-        <th class="sortable" data-column="1" data-type="date" style="cursor: pointer; user-select: none;">
+        <th class="sortable" data-column="1" data-type="date">
             Початок <span class="sort-icon">↕</span>
         </th>
-        <th class="sortable" data-column="2" data-type="date" style="cursor: pointer; user-select: none;">
+        <th class="sortable" data-column="2" data-type="date">
             Кінець <span class="sort-icon">↕</span>
         </th>
-        <th class="sortable" data-column="3" data-type="number" style="cursor: pointer; user-select: none;">
+        <th class="sortable" data-column="3" data-type="number">
             Дні <span class="sort-icon">↕</span>
         </th>
         <th>Опис</th>
@@ -77,13 +80,12 @@
                     <td>{{ doc.description|default:"-" }}</td>
                 </tr>
             {% endfor %}
+            {% if not documents %}
+                <tr id="noDocumentsMsg"><td colspan="5" class="empty-state">У вас ще немає документів.</td></tr>
+            {% endif %}
         </tbody>
     </table>
-{% else %}
-    <p id="noDocumentsMsg">
-    У вас ще немає завантажених документів.
-    </p>
-{% endif %}
+</div>
 
 <script src="{% static 'document/js/modal.js' %}"></script>
 {% endblock %}

@@ -3,24 +3,31 @@
 {% block title %}Вхід у систему{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
-    <form method="post" style="width: 100%; max-width: 400px;">
-        <h2 style="text-align: center; margin-bottom: 1.5rem;">Авторизація</h2>
+<div class="auth-layout">
+    <form method="post" class="form-card auth-card">
+        <span class="eyebrow">TimeManager</span>
+        <h1>Вхід у систему</h1>
+        <p class="page-subtitle">Увійдіть, щоб переглянути робочий час і документи.</p>
         
         {% csrf_token %}
         
         {% if form.errors %}
-            <div class="messages">
-                <li class="error" style="list-style: none;">Неправильний логін або пароль.</li>
-            </div>
+            <ul class="messages">
+                <li class="error">Неправильний логін або пароль.</li>
+            </ul>
         {% endif %}
 
         {% for field in form %}
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            </div>
         {% endfor %}
         
-        <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Увійти</button>
+        <div class="form-actions">
+            <button type="submit" class="btn">Увійти</button>
+        </div>
+        <p class="form-footnote"><a href="{% url 'password_reset' %}">Забули пароль?</a></p>
     </form>
 </div>
 {% endblock %}

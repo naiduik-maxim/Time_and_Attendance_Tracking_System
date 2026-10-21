@@ -1,9 +1,13 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.db.models import Sum
 from django.views.generic import ListView, CreateView
+from datetime import date
+
+from timesheets.services import TYPE_TO_FIELD, iter_counted_days, normalize_type
 from .forms import DocumentForm
 from .models import Document
 import json
@@ -23,13 +27,18 @@ class DocumentListView(UserPassesTestMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        current_year = timezone.now().year
+        current_year = timezone.localdate().year
+        year_start = date(current_year, 1, 1)
+        year_end = date(current_year, 12, 31)
         user_docs_this_year = Document.objects.filter(
             worker__user=self.request.user, 
-            date_start__year=current_year
-        )
+            date_start__lte=year_end,
+            date_end__gte=year_start,
+        ).select_related('type_missing')
 
         booked_dates = []
+        vacation_used = 0
+        sick_used = 0
 
         for doc in user_docs_this_year:
             if doc.date_start and doc.date_end:
@@ -38,14 +47,20 @@ class DocumentListView(UserPassesTestMixin, ListView):
                     'end': doc.date_end.strftime('%Y-%m-%d')
                     })
 
+                counted_days = sum(1 for _ in iter_counted_days(
+                    max(doc.date_start, year_start),
+                    min(doc.date_end, year_end),
+                ))
+                field = TYPE_TO_FIELD.get(normalize_type(doc.type_missing.name))
+                if field == 'vacation':
+                    vacation_used += counted_days
+                elif field == 'hospital':
+                    sick_used += counted_days
+
 
         context['booked_dates'] = json.dumps(booked_dates)
 
-        vacation_used = user_docs_this_year.filter(type_missing__name='vacation').aggregate(Sum('count_day'))['count_day__sum'] or 0
-        sick_used = user_docs_this_year.filter(type_missing__name='hospital').aggregate(Sum('count_day'))['count_day__sum'] or 0
-
-    
-        LIMIT_VACATION = self.request.user.vacation_limit
+        LIMIT_VACATION = self.request.user.worker_profile.vacation_limit
         LIMIT_SICK = self.request.user.sick_limit
 
 
@@ -60,9 +75,15 @@ class DocumentCreateView(UserPassesTestMixin, CreateView):
     model = Document
     form_class = DocumentForm  
     success_url = reverse_lazy('document_list')
+    http_method_names = ['post']
 
     def test_func(self):
         return self.request.user.groups.filter(name='Workers').exists()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['worker'] = self.request.user.worker_profile
+        return kwargs
 
     def form_valid(self, form):
         form.instance.worker = self.request.user.worker_profile
@@ -83,7 +104,7 @@ class DocumentCreateView(UserPassesTestMixin, CreateView):
                 }
             })
         
-        return super().form_valid(form)
+        return redirect(self.get_success_url())
 
     def form_invalid(self, form):
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -91,4 +112,5 @@ class DocumentCreateView(UserPassesTestMixin, CreateView):
                 'status': 'error',
                 'errors': form.errors
             }, status=400)
-        return super().form_invalid(form)
+        messages.error(self.request, 'Документ не збережено. Перевірте дати та кількість робочих днів.')
+        return redirect('document_list')

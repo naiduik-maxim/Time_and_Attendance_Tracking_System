@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Кабінет менеджера{% endblock %}
+
+{% block extra_head %}<link rel="stylesheet" href="{% static 'unit/css/manager.css' %}">{% endblock %}
+
+{% block content %}
+<div class="manager-page" data-open-modal="{{ open_modal|default:'' }}">
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">Команда та робочий час</span>
+            <h1>Кабінет менеджера</h1>
+            <p class="page-subtitle">Оберіть підрозділ, щоб переглянути статистику та працівників.</p>
+        </div>
+        <div class="form-actions">
+            <a href="{% url 'unit_create' %}" class="btn" data-open-modal="unit-modal" aria-haspopup="dialog">+ Створити підрозділ</a>
+        </div>
+    </div>
+
+    {% if action_error %}<div class="alert alert-error" role="alert">{{ action_error }}</div>{% endif %}
+
+    <div class="manager-search-panel">
+        <label for="department-search">Пошук підрозділу</label>
+        <input id="department-search" type="search" placeholder="Назва, код або керівник" autocomplete="off">
+        <p id="department-search-count" role="status" aria-live="polite">Підрозділів: {{ departments|length }}</p>
+    </div>
+
+    <div class="manager-unit-grid">
+        {% for department in departments %}
+            <a class="manager-unit-card" href="{% url 'manager_department' department.pk %}" data-department-card data-search="{{ department.title }} {{ department.code }} {{ department.manager }}">
+                <span class="manager-unit-symbol" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h1m4 0h1M9 11h1m4 0h1M10 21v-6h4v6"/></svg></span>
+                <span class="manager-unit-code">{{ department.code }}</span>
+                <h2>{{ department.title }}</h2>
+                <p>Керівник: {{ department.manager }}</p>
+                <p>Працівників: <strong>{{ department.worker_count }}</strong></p>
+                <span class="manager-unit-link">Переглянути підрозділ →</span>
+            </a>
+        {% empty %}
+            <div class="panel empty-state">Підрозділів ще немає. Створіть перший підрозділ.</div>
+        {% endfor %}
+    </div>
+    <p id="department-no-results" class="panel empty-state" hidden>За вашим запитом підрозділів не знайдено.</p>
+
+    <dialog id="unit-modal" class="manager-modal" aria-labelledby="unit-modal-title">
+        <form method="post" action="{% url 'manager_dashboard' %}" class="form-card manager-modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_unit">
+            <div class="modal-header">
+                <h2 id="unit-modal-title">Новий підрозділ</h2>
+                <button type="button" class="icon-button" data-close-modal aria-label="Закрити">&times;</button>
+            </div>
+            {{ unit_form.non_field_errors }}
+            {% for field in unit_form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                    {% if field.errors %}<span class="field-error" role="alert">{{ field.errors|striptags }}</span>{% endif %}
+                </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-close-modal>Скасувати</button>
+                <button type="submit" class="btn">Створити підрозділ</button>
+            </div>
+        </form>
+    </dialog>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}<script src="{% static 'unit/js/manager_dashboard.js' %}" defer></script>{% endblock %}

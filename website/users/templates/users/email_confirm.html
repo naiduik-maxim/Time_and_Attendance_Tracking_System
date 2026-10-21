@@ -1,36 +1,23 @@
 {% extends "base.html" %}
-
+{% block title %}Підтвердження email — TimeManager{% endblock %}
 {% block content %}
-    <dialog
-        class="profile-dialog"
-        data-auto-dialog
-        aria-labelledby="email-title"
-    >
-        <h2 id="email-title">Підтвердження email</h2>
-
+<div class="form-layout">
+    <section class="status-card" aria-labelledby="email-title">
+        <span class="eyebrow">Обліковий запис</span>
+        <h1 id="email-title">Підтвердження email</h1>
         {% if new_email %}
-            <p>
-                Встановити адресу
-                <strong>{{ new_email }}</strong>?
-            </p>
-
+            <p>Встановити адресу <strong>{{ new_email }}</strong>?</p>
             <form method="post">
                 {% csrf_token %}
-
-                <button class="btn" type="submit">
-                    Підтвердити
-                </button>
+                <div class="form-actions">
+                    <a class="btn btn-secondary" href="{% url 'profile_page' %}">До профілю</a>
+                    <button class="btn" type="submit">Підтвердити</button>
+                </div>
             </form>
         {% else %}
-            <p>
-                Посилання недійсне, прострочене або вже використане.
-                Увійдіть у правильний обліковий запис
-                або створіть новий запит.
-            </p>
+            <p class="alert alert-error">Посилання недійсне, прострочене або вже використане. Увійдіть у правильний обліковий запис або створіть новий запит.</p>
+            <div class="form-actions"><a class="btn btn-secondary" href="{% url 'profile_page' %}">До профілю</a></div>
         {% endif %}
-
-        <a href="{% url 'profile_page' %}">
-            Повернутися до профілю
-        </a>
-    </dialog>
+    </section>
+</div>
 {% endblock %}

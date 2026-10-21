@@ -4,6 +4,7 @@ from datetime import date, timedelta
 
 from django.db import transaction
 from django.db.models import Count
+from django.utils import timezone
 
 from documents.models import Document
 from workers.models import Worker
@@ -95,7 +96,7 @@ def iter_counted_days(start, end):
 
 
 @transaction.atomic
-def sync_timesheet(tabel_id):
+def sync_timesheet(tabel_id, *, as_of=None):
     """
     Синхронізує Document -> ContentTabel.
 
@@ -117,6 +118,7 @@ def sync_timesheet(tabel_id):
         tabel.t_year,
         tabel.t_month
     )
+    worked_until = min(month_end, as_of or timezone.localdate())
 
     workers = list(
         Worker.objects
@@ -192,7 +194,8 @@ def sync_timesheet(tabel_id):
 
         start = max(
             document.date_start,
-            month_start
+            month_start,
+            workers_by_number[worker_number].date_joined,
         )
 
         end = min(
@@ -254,6 +257,18 @@ def sync_timesheet(tabel_id):
             field: len(worker_days[field])
             for field in fields
         }
+
+        eligible_days = set(iter_counted_days(
+            max(month_start, worker.date_joined),
+            worked_until,
+        ))
+        absent_days = (
+            worker_days['skip_days']
+            | worker_days['vacation']
+            | worker_days['hospital']
+        )
+        # Відрядження є робочим часом, тому не віднімаємо його.
+        defaults['count_work_day'] = len(eligible_days - absent_days)
 
         for field in fields:
             totals[field] += defaults[field]

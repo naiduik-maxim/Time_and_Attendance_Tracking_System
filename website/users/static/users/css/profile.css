@@ -1,612 +1,87 @@
-
-/* Основне модальне вікно */
-
 dialog.profile-dialog {
-    box-sizing: border-box;
-    width: calc(100% - 32px);
-    max-width: 380px;
-    max-height: 90vh;
-    padding: 0;
+    width: min(500px, calc(100% - 28px));
+    max-height: 90dvh;
     margin: auto;
+    padding: 0;
     overflow-y: auto;
-
-    background: #1b1b1b;
-    color: #f5f5f5;
-    border: 1px solid #383838;
-    border-radius: 13px;
-
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    color-scheme: dark;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--surface-color);
+    color: var(--text-color);
+    box-shadow: var(--shadow-strong);
 }
-
-dialog.profile-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-}
-
-#profile-body {
-    padding: 0;
-    color: #f5f5f5;
-}
-
-.profile-card {
-    padding: 18px 16px;
-    background: #1b1b1b;
-    color: #f5f5f5;
-    font-family: Arial, sans-serif;
-}
-
-/* Заголовок */
-
-.profile-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 22px;
-}
-
-.profile-card-header h2 {
-    margin: 0;
-    font-size: 19px;
-    font-weight: 700;
-    color: #ffffff;
-}
-
+dialog.profile-dialog::backdrop { background: var(--overlay); backdrop-filter: blur(3px); }
+dialog.profile-dialog[data-auto-dialog] { padding: 24px; }
+#profile-body { color: var(--text-color); }
+.profile-card { padding: 24px; }
+.profile-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.profile-card-header h2 { flex: 1; margin: 0 0 0 36px; font-size: 1.4rem; text-align: center; }
 .profile-close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 28px;
-    height: 28px;
-    padding: 0;
-
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    color: #bcbcbc;
-    font-size: 23px;
-    cursor: pointer;
+    display: grid; place-items: center; flex: none; width: 36px; height: 36px;
+    padding: 0; border: 0; border-radius: 9px;
+    background: transparent; color: var(--muted-color); font-size: 1.5rem;
 }
-
-.profile-close-btn:hover {
-    background: #303030;
-    color: white;
-}
-
-/* Блок користувача */
-
-.profile-account-block {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
+.profile-close-btn:hover { background: var(--surface-muted); color: var(--primary-color); }
+.profile-account-block { display: flex; align-items: center; gap: 13px; }
 .profile-avatar {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-    background: #262626;
-    color: #ffffff;
-    font-size: 24px;
+    display: grid; place-items: center; flex: none; width: 48px; height: 48px;
+    border-radius: 13px; background: var(--accent-soft); color: var(--accent-color);
 }
-
-.profile-account-info h3 {
-    margin: 0 0 5px;
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-.profile-account-info p {
-    margin: 0;
-    color: #d1d5db;
-    font-size: 12px;
-}
-
-/* Роздільник */
-
-.profile-divider {
-    height: 1px;
-    margin: 18px 0 22px;
-    background: #303030;
-}
-
-/* Email */
-
-.profile-section-block {
-    margin-bottom: 12px;
-}
-
-.profile-label {
-    display: block;
-    margin-bottom: 7px;
-    color: #f1f1f1;
-    font-size: 13px;
-    font-weight: 500;
-}
-
+.profile-account-info h3 { margin: 0 0 4px; font-size: .98rem; }
+.profile-account-info p { margin: 0; color: var(--muted-color); font-size: .82rem; }
+.profile-divider { height: 1px; margin: 20px 0; background: var(--border-color); }
+.profile-section-block { margin-bottom: 16px; }
+.profile-label { margin-bottom: 7px; }
 .profile-readonly-field {
-    display: flex;
-    align-items: center;
-
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 46px;
-    padding: 12px;
-
-    background: #1b1b1b;
-    border: 1px solid #3b3b3b;
-    border-radius: 7px;
-
-    color: #f5f5f5;
-    font-size: 13px;
-    overflow-wrap: anywhere;
+    padding: 11px 12px; border: 1px solid var(--border-color);
+    border-radius: 9px; background: var(--surface-muted); overflow-wrap: anywhere;
 }
-
-/* Кнопки зміни email і пароля */
-
-.profile-action-card {
-    margin: 12px 0;
-    background: #1c1c1c;
-    border: 1px solid #3b3b3b;
-    border-radius: 9px;
-    overflow: hidden;
-}
-
+.profile-feedback:empty { display: none; }
+.profile-message { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: #ecfdf3; color: #166534; font-size: .86rem; }
+.profile-action-card { margin: 10px 0; border: 1px solid var(--border-color); border-radius: 10px; background: var(--surface-color); overflow: hidden; }
+.profile-action-card:hover { border-color: #a5cfc0; }
 .profile-action-card summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 15px 13px;
-    cursor: pointer;
-    list-style: none;
-
-    color: #f5f5f5;
-    font-size: 13px;
-    font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 14px; cursor: pointer; list-style: none;
+    color: var(--primary-color); font-size: .9rem; font-weight: 650;
 }
-
-.profile-action-card summary::-webkit-details-marker {
-    display: none;
+.profile-action-card summary::-webkit-details-marker { display: none; }
+.profile-action-card summary::marker { content: ""; }
+.profile-action-left { display: flex; align-items: center; gap: 10px; }
+.profile-action-icon { display: grid; place-items: center; width: 26px; height: 26px; color: var(--accent-color); }
+.profile-action-arrow { color: var(--muted-color); font-size: 1.35rem; transition: transform .2s; }
+.profile-action-card[open] .profile-action-arrow { transform: rotate(90deg); }
+.profile-action-content { padding: 16px 14px; border-top: 1px solid var(--border-color); background: var(--surface-muted); }
+.profile-form { display: grid; gap: 15px; margin: 0; }
+.profile-form p { margin: 0; }
+.profile-form label { margin-bottom: 6px; }
+.profile-form input:not([type="hidden"]) { width: 100%; }
+.profile-form .errorlist { margin-bottom: 5px; }
+.profile-submit-btn { justify-self: end; width: auto; }
+.profile-helper-text { margin: 0; color: var(--muted-color); font-size: .85rem; }
+.profile-extra-info { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+.profile-extra-info > summary { cursor: pointer; color: var(--primary-color); font-size: .9rem; font-weight: 650; }
+.profile-grid { display: grid; gap: 4px; margin-top: 13px; }
+.profile-info-row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border-color); }
+.profile-info-row span { color: var(--muted-color); font-size: .82rem; }
+.profile-info-row strong { text-align: right; overflow-wrap: anywhere; font-size: .82rem; font-weight: 600; }
+.profile-logout-section { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border-color); }
+.profile-logout-form { margin: 0; text-align: right; }
+.profile-logout-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    min-height: 42px; padding: 10px 14px;
+    border: 1px solid #fecaca; border-radius: 9px;
+    background: #fff1f2; color: #b91c1c; font-size: .9rem; font-weight: 650;
 }
-
-.profile-action-card summary::marker {
-    content: "";
-}
-
-.profile-action-card:hover {
-    background: #262626;
-    border-color: #505050;
-}
-
-.profile-action-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.profile-action-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    font-size: 16px;
-}
-
-.profile-action-arrow {
-    color: #a1a1aa;
-    font-size: 22px;
-    font-weight: 400;
-    transition: transform .2s ease;
-}
-
-.profile-action-card[open] .profile-action-arrow {
-    transform: rotate(90deg);
-}
-
-/* Вміст розгорнутих секцій */
-
-.profile-action-content {
-    padding: 0 13px 14px;
-    border-top: 1px solid #303030;
-}
-
-.profile-form {
-    margin-top: 14px;
-}
-
-.profile-form p {
-    margin: 0 0 12px;
-}
-
-.profile-form label {
-    display: block;
-    margin-bottom: 6px;
-    color: #d4d4d8;
-    font-size: 13px;
-}
-
-.profile-form input,
-.profile-form select,
-.profile-form textarea {
-    box-sizing: border-box;
-    display: block;
-    width: 100%;
-    min-height: 42px;
-    padding: 10px 12px;
-
-    color: #ffffff;
-    background: #242424;
-    border: 1px solid #424242;
-    border-radius: 7px;
-    font-size: 13px;
-}
-
-.profile-form input:focus,
-.profile-form textarea:focus {
-    outline: none;
-    border-color: #777777;
-}
-
-.profile-submit-btn {
-    width: 100%;
-    padding: 11px;
-    margin-top: 6px;
-
-    background: #f5f5f5;
-    color: #111111;
-
-    border: none;
-    border-radius: 7px;
-
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.profile-submit-btn:hover {
-    background: #dddddd;
-}
-
-.profile-helper-text {
-    color: #a1a1aa;
-    font-size: 12px;
-}
-
-/* Додаткові відомості */
-
-.profile-extra-info {
-    margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1px solid #303030;
-}
-
-.profile-extra-info h4,
-.profile-extra-info > summary {
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.profile-extra-info > summary {
-    cursor: pointer;
-    padding: 6px 0;
-}
-
-.profile-grid {
-    display: grid;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-.profile-info-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid #303030;
-}
-
-.profile-info-row span {
-    color: #a1a1aa;
-    font-size: 12px;
-}
-
-.profile-info-row strong {
-    color: #f5f5f5;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: right;
-    overflow-wrap: anywhere;
-}
-
-/* Мобільні пристрої */
+.profile-logout-btn:hover { background: #ffe4e6; color: #991b1b; }
 
 @media (max-width: 480px) {
-    dialog.profile-dialog {
-        width: calc(100% - 20px);
-    }
-
-    .profile-card {
-        padding: 16px 14px;
-    }
-
-    .profile-info-row {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .profile-info-row strong {
-        text-align: left;
-    }
+    .profile-card { padding: 19px; }
+    .profile-info-row { flex-direction: column; gap: 3px; }
+    .profile-info-row strong { text-align: left; }
 }
 
-/* Контейнер форми */
-#profile-dialog .profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 16px;
-}
-
-/* Контейнер кожного поля Django form.as_p */
-#profile-dialog .profile-form p {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    margin: 0;
-}
-
-/* Назви полів */
-#profile-dialog .profile-form label {
-    display: block;
-    color: #e5e7eb;
-    font-size: 13px;
-    font-weight: 500;
-    margin: 0;
-}
-
-/* Поля введення */
-#profile-dialog .profile-form input {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 44px;
-    padding: 11px 14px;
-
-    background: #242424;
-    color: #ffffff;
-
-    border: 1px solid #424242;
-    border-radius: 8px;
-
-    font-family: inherit;
-    font-size: 14px;
-
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-/* Підказки всередині полів */
-#profile-dialog .profile-form input::placeholder {
-    color: #777777;
-}
-
-/* Поле у фокусі */
-#profile-dialog .profile-form input:focus {
-    border-color: #818cf8;
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.12);
-}
-
-/* Кнопка підтвердження */
-#profile-dialog .profile-submit-btn {
-    width: 100%;
-    min-height: 44px;
-    margin-top: 4px;
-    padding: 12px 16px;
-
-    background: #f5f5f5;
-    color: #181818;
-
-    border: none;
-    border-radius: 8px;
-
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-}
-
-/* Наведення на кнопку */
-#profile-dialog .profile-submit-btn:hover {
-    background: #dcdcdc;
-}
-
-/* Натискання */
-#profile-dialog .profile-submit-btn:active {
-    transform: scale(0.98);
-}
-
-/* Неактивна кнопка */
-#profile-dialog .profile-submit-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Помилки валідації Django */
-#profile-dialog .profile-form .errorlist {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    color: #f87171;
-    font-size: 12px;
-}
-
-/* Контейнер форми */
-#profile-dialog .profile-action-content {
-    background: #202020;
-    padding: 16px 13px;
-    border-top: 1px solid #343434;
-}
-
-/* Прибираємо білий фон та стилі загальної форми */
-#profile-dialog .profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
-    width: 100%;
-    margin: 0;
-    padding: 0;
-
-    background: transparent !important;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-/* Групи полів Django */
-#profile-dialog .profile-form p {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    margin: 0;
-    padding: 0;
-
-    background: transparent !important;
-    border: none;
-    box-shadow: none;
-}
-
-/* Назви полів */
-#profile-dialog .profile-form label {
-    display: block;
-    margin: 0;
-
-    color: #e5e7eb;
-    font-size: 13px;
-    font-weight: 500;
-    background: transparent;
-}
-
-/* Поля введення */
-#profile-dialog .profile-form input:not([type="hidden"]) {
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 44px;
-    padding: 12px 14px;
-
-    background: #292929 !important;
-    color: #ffffff !important;
-
-    border: 1px solid #444444;
-    border-radius: 8px;
-
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-/* Фокус на полі */
-#profile-dialog .profile-form input:focus {
-    border-color: #818cf8;
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.12);
-}
-
-/* Автозаповнення Chrome */
-#profile-dialog .profile-form input:-webkit-autofill {
-    -webkit-text-fill-color: #ffffff;
-    -webkit-box-shadow: 0 0 0 1000px #292929 inset;
-}
-
-/* Кнопка підтвердження */
-#profile-dialog .profile-form button[type="submit"] {
-    width: 100%;
-    min-height: 44px;
-    margin: 4px 0 0;
-    padding: 12px 16px;
-
-    background: #f5f5f5;
-    color: #181818;
-
-    border: none;
-    border-radius: 8px;
-
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-
-    transition: background 0.2s;
-}
-
-#profile-dialog .profile-form button[type="submit"]:hover {
-    background: #d4d4d4;
-}
-
-/* Блок виходу з акаунта */
-#profile-dialog .profile-logout-section {
-    margin-top: 20px;
-    padding-top: 18px;
-    border-top: 1px solid #343434;
-}
-
-/* Форма виходу */
-#profile-dialog .profile-logout-form {
-    margin: 0;
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-}
-
-/* Кнопка виходу */
-#profile-dialog .profile-logout-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-
-    width: 100%;
-    min-height: 44px;
-    padding: 12px 16px;
-
-    background: rgba(239, 68, 68, 0.08);
-    color: #f87171;
-
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    border-radius: 9px;
-
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-#profile-dialog .profile-logout-btn:hover {
-    background: rgba(239, 68, 68, 0.17);
-    border-color: #ef4444;
-    color: #fca5a5;
-}
-
-#profile-dialog .profile-logout-btn svg {
-    flex-shrink: 0;
-}
-
-#profile-dialog .profile-logout-btn:active {
-    transform: scale(0.98);
-}
+.profile-loading-header { margin: 24px; }
+.profile-loading { padding: 24px; text-align: center; color: var(--muted-color); }
+#profile-body > .alert { margin: 24px; }
+.profile-account-info, .profile-info-row strong { min-width: 0; }

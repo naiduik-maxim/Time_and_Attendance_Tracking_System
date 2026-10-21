@@ -66,9 +66,10 @@
 
     <!-- Повідомлення -->
     <div class="profile-feedback" aria-live="polite">
+        {% if notice %}<p class="alert">{{ notice }}</p>{% endif %}
         {% if messages %}
             {% for message in messages %}
-                <p class="profile-message">
+                <p class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
                     {{ message }}
                 </p>
             {% endfor %}
@@ -76,7 +77,7 @@
     </div>
 
     <!-- Зміна email -->
-    <details class="profile-action-card">
+    <details class="profile-action-card" {% if email_form.errors or email_change_form.errors %}open{% endif %}>
 
         <summary>
             <span class="profile-action-left">
@@ -152,7 +153,7 @@
     </details>
 
     <!-- Зміна пароля -->
-    <details class="profile-action-card">
+    <details class="profile-action-card" {% if password_form.errors or password_link_form.errors %}open{% endif %}>
 
         <summary>
             <span class="profile-action-left">

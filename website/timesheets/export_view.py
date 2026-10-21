@@ -41,6 +41,7 @@ HEADERS = [
     "Табельний номер",
     "ПІБ працівника",
     "Посада",
+    "Відпрацьовані дні",
     "Пропуски",
     "Відпустка",
     "Лікарняний",
@@ -85,6 +86,13 @@ def get_timesheet_data(tabel):
                 ),
                 Value(0),
             ),
+            total_work_days=Coalesce(
+                Sum(
+                    "tabel_records__count_work_day",
+                    filter=Q(tabel_records__tabel=tabel),
+                ),
+                Value(0),
+            ),
             record_count=Count(
                 "tabel_records", 
                 filter=Q(tabel_records__tabel=tabel),
@@ -115,6 +123,7 @@ def get_timesheet_data(tabel):
                 f"{worker.lastname}" 
             ),
             worker.post,
+            worker.total_work_days if worker.record_count else "-",
             *days,
         ])
 
@@ -218,8 +227,8 @@ class AccountantTimesheetPDFView(AccountantExportMixin,View):
         table = Table(
             data,
             colWidths=[
-                28, 85, 175, 125,
-                85, 85, 85, 85,
+                28, 75, 155, 105,
+                70, 70, 70, 70, 70,
             ],
             repeatRows=1,
             hAlign="LEFT",
@@ -301,7 +310,7 @@ class AccountantTimesheetExcelView(
         sheet.title = "Табель"
 
 
-        sheet.merge_cells("A1:H1")
+        sheet.merge_cells("A1:I1")
         sheet["A1"] = "Табель обліку робочого часу"
 
         sheet["A1"].font = Font(
@@ -382,7 +391,7 @@ class AccountantTimesheetExcelView(
 
             sheet.row_dimensions[row_index].height = 25
 
-        widths = [8, 22, 35, 25, 15, 15, 15, 17]
+        widths = [8, 22, 35, 25, 22, 15, 15, 15, 17]
 
         for col, width in enumerate(widths, start=1):
             sheet.column_dimensions[
@@ -391,7 +400,7 @@ class AccountantTimesheetExcelView(
 
         last_row = max(5, 5 + len(rows))
 
-        sheet.auto_filter.ref = f"A5:H{last_row}"
+        sheet.auto_filter.ref = f"A5:I{last_row}"
 
         sheet.freeze_panes = "A6"
 

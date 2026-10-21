@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ unit.title }} — кабінет менеджера{% endblock %}
+
+{% block extra_head %}<link rel="stylesheet" href="{% static 'unit/css/manager.css' %}">{% endblock %}
+
+{% block content %}
+<div class="manager-page" data-open-modal="{{ open_modal|default:'' }}">
+    <div class="manager-back"><a href="{% url 'manager_dashboard' %}" class="btn btn-secondary">← Усі підрозділи</a></div>
+
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">Огляд підрозділу</span>
+            <h1>{{ unit.title }}</h1>
+            <p class="page-subtitle">Код: {{ unit.code }} · Керівник: {{ unit.manager }}</p>
+        </div>
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" data-open-modal="workers-modal" aria-haspopup="dialog">Працівники ({{ worker_count }})</button>
+            <button type="button" class="btn" data-open-modal="worker-modal" aria-haspopup="dialog">+ Найняти працівника</button>
+        </div>
+    </div>
+
+    {% if action_error %}<div class="alert alert-error" role="alert">{{ action_error }}</div>{% endif %}
+
+    <section class="panel manager-statistics" aria-labelledby="statistics-title">
+        <div class="manager-section-heading">
+            <div>
+                <h2 id="statistics-title">Статистика підрозділу</h2>
+                <p class="muted">Дані з табелів обліку робочого часу</p>
+            </div>
+            <form method="get" class="manager-period-form">
+                <div class="manager-period-field">
+                <label for="period-year">Рік</label>
+                <select id="period-year" name="year">
+                    {% for choice in years %}<option value="{{ choice }}" {% if choice == year %}selected{% endif %}>{{ choice }}</option>{% endfor %}
+                </select>
+                </div>
+                <div class="manager-period-field">
+                <label for="period-month">Місяць</label>
+                <select id="period-month" name="month">
+                    <option value="" {% if not month %}selected{% endif %}>Весь рік</option>
+                    {% for number, name in months %}<option value="{{ number }}" {% if number == month %}selected{% endif %}>{{ name }}</option>{% endfor %}
+                </select>
+                </div>
+                <button type="submit" class="btn">Показати</button>
+            </form>
+        </div>
+
+        <div class="manager-metrics" aria-label="Показники за вибраний період">
+            <div><span>Працівників зараз</span><strong>{{ worker_count }}</strong></div>
+            <div><span>Табелів</span><strong>{{ stats.timesheet_count }}</strong></div>
+            <div><span>Робочих днів</span><strong>{{ stats.work_days }}</strong></div>
+            <div><span>Днів відпустки</span><strong>{{ stats.vacation_days }}</strong></div>
+            <div><span>Лікарняних</span><strong>{{ stats.sick_days }}</strong></div>
+            <div><span>Відряджень</span><strong>{{ stats.assignment_days }}</strong></div>
+            <div><span>Пропусків</span><strong>{{ stats.skipped_days }}</strong></div>
+        </div>
+
+        <div class="manager-chart-section">
+            <h3>{{ chart_title }}</h3>
+            {% if chart_has_data %}
+                {% if not month %}
+                    <div class="manager-chart-legend"><span><i class="manager-legend-work"></i> Відпрацьовані дні</span><span><i class="manager-legend-vacation"></i> Відпустка</span><span><i class="manager-legend-other"></i> Інші дні</span></div>
+                {% endif %}
+                <div class="manager-chart">
+                    {% for row in chart_rows %}
+                        <div class="manager-chart-row">
+                            <span class="manager-chart-label">{{ row.label }}</span>
+                            <div class="manager-chart-series">
+                                {% for bar in row.bars %}
+                                    <div class="manager-chart-line" aria-label="{{ row.label }} — {{ bar.label }}: {{ bar.value }} днів">
+                                        <span class="manager-chart-track"><span class="manager-chart-fill manager-chart-{{ bar.kind }}" style="width: {{ bar.width }}%"></span></span>
+                                        <strong>{{ bar.value }}</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">За вибраний період у табелях немає записів.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <dialog id="workers-modal" class="manager-modal manager-workers-modal" aria-labelledby="workers-modal-title">
+        <div class="manager-workers-content">
+            <div class="modal-header">
+                <h2 id="workers-modal-title">Працівники підрозділу</h2>
+                <button type="button" class="icon-button" data-close-modal aria-label="Закрити">&times;</button>
+            </div>
+            {% if workers %}
+                <div class="manager-search-panel">
+                    <label for="worker-search">Пошук працівника</label>
+                    <input id="worker-search" type="search" placeholder="ПІБ, посада або табельний номер" autocomplete="off" data-modal-focus>
+                    <p id="worker-search-count" role="status" aria-live="polite">Працівників: {{ worker_count }}</p>
+                </div>
+                <div class="table-wrapper" id="worker-table-wrapper">
+                    <table>
+                        <thead><tr><th>Працівник</th><th>Посада</th><th>Табельний №</th><th>Ліміт відпустки, днів</th></tr></thead>
+                        <tbody>
+                            {% for worker in workers %}
+                                <tr data-worker-row data-search="{{ worker.surname }} {{ worker.firstname }} {{ worker.lastname }} {{ worker.post }} {{ worker.tabel_num }} {{ worker.email }}">
+                                    <td data-label="Працівник">{{ worker.surname }} {{ worker.firstname }} {{ worker.lastname }}</td>
+                                    <td data-label="Посада">{{ worker.post }}</td>
+                                    <td data-label="Табельний №">{{ worker.tabel_num }}</td>
+                                    <td data-label="Ліміт відпустки, днів">
+                                        <form method="post" action="{% url 'manager_department' unit.pk %}" class="manager-limit-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="update_vacation">
+                                            <input type="hidden" name="worker_id" value="{{ worker.pk }}">
+                                            <input type="hidden" name="year" value="{{ year }}">
+                                            <input type="hidden" name="month" value="{{ month|default_if_none:'' }}">
+                                            <label class="visually-hidden" for="limit-{{ worker.pk }}">Ліміт відпустки для {{ worker.surname }} {{ worker.firstname }}</label>
+                                            <input id="limit-{{ worker.pk }}" type="number" name="vacation_limit" min="0" max="365" required value="{% if limit_worker_id == worker.pk %}{{ limit_form.vacation_limit.value|default_if_none:'' }}{% else %}{{ worker.vacation_limit }}{% endif %}" {% if limit_worker_id == worker.pk and limit_form.errors %}aria-invalid="true"{% endif %}>
+                                            <button class="btn" type="submit">Зберегти</button>
+                                        </form>
+                                        {% if limit_worker_id == worker.pk and limit_form.errors %}<span class="field-error" role="alert">{{ limit_form.vacation_limit.errors|striptags }}</span>{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p id="worker-no-results" class="empty-state" hidden>За вашим запитом працівників не знайдено.</p>
+            {% else %}
+                <p class="empty-state">У підрозділі поки немає працівників.</p>
+            {% endif %}
+        </div>
+    </dialog>
+
+    <dialog id="worker-modal" class="manager-modal" aria-labelledby="worker-modal-title">
+        <form method="post" action="{% url 'manager_department' unit.pk %}" class="form-card manager-modal-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_worker">
+            <input type="hidden" name="year" value="{{ year }}">
+            <input type="hidden" name="month" value="{{ month|default_if_none:'' }}">
+            <div class="modal-header">
+                <h2 id="worker-modal-title">Найняти в {{ unit.title }}</h2>
+                <button type="button" class="icon-button" data-close-modal aria-label="Закрити">&times;</button>
+            </div>
+            {{ worker_form.non_field_errors }}
+            {% for field in worker_form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                    {% if field.errors %}<span class="field-error" role="alert">{{ field.errors|striptags }}</span>{% endif %}
+                </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-close-modal>Скасувати</button>
+                <button type="submit" class="btn">Найняти працівника</button>
+            </div>
+        </form>
+    </dialog>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}<script src="{% static 'unit/js/manager_dashboard.js' %}" defer></script>{% endblock %}

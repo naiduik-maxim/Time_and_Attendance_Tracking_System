@@ -22,7 +22,7 @@ class UserLoginView(LoginView):
             return reverse('timesheets:accountant_dashboard') 
             
         elif user.groups.filter(name='Managers').exists():
-            return reverse('unit_list')
+            return reverse('manager_dashboard')
             
         elif user.groups.filter(name='Workers').exists():
             return reverse('document_list')

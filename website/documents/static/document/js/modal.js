@@ -738,10 +738,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const table = document.getElementById("documentTable");
             const tbody = document.getElementById("documentTableBody");
-            const noDocsMsg = document.getElementById("noDocumuentMsg");
+            const noDocsMsg = document.getElementById("noDocumentsMsg");
 
             if (noDocsMsg) {
-                noDocsMsg.style.display = "none";
+                noDocsMsg.remove();
             }
 
             if (table) {

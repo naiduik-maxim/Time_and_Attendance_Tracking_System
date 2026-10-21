@@ -53,14 +53,16 @@
             </select>
         </div>
 
-        <button type="submit" class="btn">
-            Застосувати
-        </button>
+        <div class="filter-actions">
+            <button type="submit" class="btn">
+                Застосувати
+            </button>
 
-        <a class="btn btn-secondary"
-           href="{% url 'timesheets:department_timesheets' department.pk %}">
-            Скинути
-        </a>
+            <a class="btn btn-secondary"
+               href="{% url 'timesheets:department_timesheets' department.pk %}">
+                Скинути
+            </a>
+        </div>
 
     </form>
 

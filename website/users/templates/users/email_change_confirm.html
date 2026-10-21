@@ -4,7 +4,8 @@
 {% block title %}Підтвердження email{% endblock %}
 
 {% block content %}
-<h2>Підтвердження зміни email</h2>
+<div class="status-card">
+<h1>Підтвердження зміни email</h1>
 
 {% if valid %}
     <form method="post">
@@ -20,4 +21,5 @@
         Запросити нове посилання
     </a>
 {% endif %}
+</div>
 {% endblock %}

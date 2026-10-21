@@ -74,7 +74,7 @@ class DepartmentTimesheetsView(AccountantRequiredMixin, ListView):
         self.selected_year = None
 
         month = self.request.GET.get('month', '')
-        year = self.request.GET.get('yeat', '')
+        year = self.request.GET.get('year', '')
 
         if month.isdigit() and 1 <= int(month) <= 12:
             self.selected_month = int(month)
@@ -120,24 +120,6 @@ class AccountantTimesheetDetailView(AccountantRequiredMixin, DetailView):
             .select_related("unit")
         )
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-
-        try:
-            sync_timesheet(self.object.pk)
-
-        except TimesheetSyncError as error:
-            messages.error(
-                request,
-                f"Не вдалося оновити табель: {error}"
-            )
-
-        context = self.get_context_data(
-            object=self.object
-        )
-
-        return self.render_to_response(context)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -182,6 +164,13 @@ class AccountantTimesheetDetailView(AccountantRequiredMixin, DetailView):
                     ),
                     Value(0),
                 ),
+                total_work_days=Coalesce(
+                    Sum(
+                        "tabel_records__count_work_day",
+                        filter=Q(tabel_records__tabel=timesheet),
+                    ),
+                    Value(0),
+                ),
                 record_count=Count(
                     "tabel_records",
                     filter=Q(
@@ -194,14 +183,17 @@ class AccountantTimesheetDetailView(AccountantRequiredMixin, DetailView):
         context['workers'] = workers
         context['workers_count'] = len(workers)
         
-        context['missing_record_count'] = sum(
-            worker.record_count
+        context['missing_records_count'] = sum(
+            worker.record_count == 0
             for worker in workers
         )
 
         context["total_skip_days"] = sum(
             worker.total_skip_days
             for worker in workers
+        )
+        context['total_work_days'] = sum(
+            worker.total_work_days for worker in workers
         )
         context["months"] = dict(MONTH)
 

@@ -95,22 +95,22 @@ class Command(BaseCommand):
                     )
                 )
 
-            self.stdout.write("")
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Створено табелів: {created_count}"
-                )
+        self.stdout.write("")
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Створено табелів: {created_count}"
             )
+        )
 
-            self.stdout.write(
-                f"Вже існувало: {existing_count}"
+        self.stdout.write(
+            f"Вже існувало: {existing_count}"
+        )
+
+        self.stdout.write(
+            f"Помилок синхронізації: {errors_count}"
+        )
+
+        if errors_count:
+            raise CommandError(
+                "Деякі табелі не вдалося синхронізувати."
             )
-
-            self.stdout.write(
-                f"Помилок синхронізації: {errors_count}"
-            )
-
-            if errors_count:
-                raise CommandError(
-                    "Деякі табелі не вдалося синхронізувати."
-                )

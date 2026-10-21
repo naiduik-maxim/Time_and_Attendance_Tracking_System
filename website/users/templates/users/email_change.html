@@ -4,22 +4,22 @@
 {% block title %}Зміна email{% endblock %}
 
 {% block content %}
-<h2>Зміна email</h2>
+<div class="form-layout">
+    <div class="form-card">
+        <h1>Зміна email</h1>
 
-<p>Поточна адреса: {{ request.user.email }}</p>
+        <p>Поточна адреса: {{ request.user.email }}</p>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
 
-    <button class="btn" type="submit">
-        Надіслати підтвердження
-    </button>
-</form>
+            <div class="form-actions">
+                <button class="btn" type="submit">Надіслати підтвердження</button>
+            </div>
+        </form>
 
-<p>
-    <a href="{% url 'password_reset' %}">
-        Змінити пароль через email
-    </a>
-</p>
+        <p class="form-footnote"><a href="{% url 'password_reset' %}">Змінити пароль через email</a></p>
+    </div>
+</div>
 {% endblock %}

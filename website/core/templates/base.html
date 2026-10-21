@@ -4,71 +4,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Система обліку часу{% endblock %}</title>
-    
-    <!-- Підключення вашого кастомного CSS -->
+    <title>{% block title %}TimeManager{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
-    
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <header class="site-header">
-        <div class="container">
-            <a href="/" class="logo">TimeTracker</a>
-            <nav class="main-nav">
-    <ul>
-        {% if user.is_authenticated %}
-        
-            <li><a href="#">Головна</a></li>
-            <li><a href="#">Підрозділи</a></li>
-            <li><a href="#">Працівники</a></li>
-            <li><a href="#">Табелі</a></li>
-            <li><a href="#">Довідки</a></li>
-            <li>
-                <button
-                    type="button"
-                    class="btn"
-                    data-profile-url="{% url 'profile' %}"
-                >
-                    Мій профіль
-                </button>
-            </li>
-        {% else %}
-            <li><a href="{% url 'login' %}" class="btn">Увійти</a></li>
-        {% endif %}
-    </ul>
-</nav>
+        <div class="container header-inner">
+            <a class="logo" href="{% if has_manager_access %}{% url 'manager_dashboard' %}{% elif user.is_authenticated %}{% url 'unit_list' %}{% else %}{% url 'login' %}{% endif %}">
+                <span class="brand-mark" aria-hidden="true">TM</span>
+                <span>TimeManager</span>
+            </a>
+
+            <nav class="main-nav" aria-label="Головна навігація">
+                {% if user.is_authenticated %}
+                    {% if has_manager_access %}
+                        <a href="{% url 'manager_dashboard' %}" {% if request.resolver_match.url_name == 'manager_dashboard' or request.resolver_match.url_name == 'manager_department' %}aria-current="page"{% endif %}>Кабінет менеджера</a>
+                    {% else %}
+                        <a href="{% url 'unit_list' %}" {% if request.resolver_match.url_name == 'unit_list' %}aria-current="page"{% endif %}>Підрозділи</a>
+                    {% endif %}
+                    {% if has_worker_access %}
+                        <a href="{% url 'document_list' %}" {% if request.resolver_match.url_name == 'document_list' %}aria-current="page"{% endif %}>Мої документи</a>
+                    {% endif %}
+                    {% if has_accountant_access %}
+                        <a href="{% url 'timesheets:accountant_dashboard' %}" {% if request.resolver_match.namespace == 'timesheets' %}aria-current="page"{% endif %}>Табелі</a>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                        <a href="{% url 'admin:index' %}">Адміністрування</a>
+                    {% endif %}
+                    <button type="button" class="btn btn-secondary" data-profile-url="{% url 'profile' %}">Мій профіль</button>
+                {% else %}
+                    <a class="btn" href="{% url 'login' %}">Увійти</a>
+                {% endif %}
+            </nav>
         </div>
     </header>
 
-    <main class="container">
+    <main class="container page-shell">
         {% if messages %}
-            <ul class="messages">
+            <ul class="messages" aria-live="polite">
                 {% for message in messages %}
                     <li class="{{ message.tags }}">{{ message }}</li>
                 {% endfor %}
             </ul>
         {% endif %}
-
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
     <footer class="site-footer">
-        <div class="container">
-            <p>&copy; Всі права захищено.</p>
-        </div>
+        <div class="container"><p>TimeManager · Облік робочого часу</p></div>
     </footer>
 
     {% if user.is_authenticated %}
-        <dialog id="profile-dialog" class="profile-dialog">
+        <dialog id="profile-dialog" class="profile-dialog" aria-label="Мій профіль">
             <div id="profile-body"></div>
         </dialog>
     {% endif %}
 
     <script src="{% static 'users/js/profile.js' %}" defer></script>
-
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

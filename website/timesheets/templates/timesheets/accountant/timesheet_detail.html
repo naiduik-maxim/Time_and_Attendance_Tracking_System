@@ -22,6 +22,11 @@
 
 <div class="timesheet-export-actions">
 
+    <form method="post" action="{% url 'timesheets:accountant_timesheet_sync' timesheet.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="export-btn">Синхронізувати табель</button>
+    </form>
+
     <a
         href="{% url 'timesheets:timesheet_export_pdf' timesheet.pk %}"
         class="export-btn export-pdf">
@@ -75,6 +80,10 @@
     </div>
 
     <div class="stat-card">
+        <p>Відпрацьованих днів</p>
+        <h3>{{ total_work_days }}</h3>
+    </div>
+    <div class="stat-card">
         <p>Усього пропущених днів</p>
         <h3>{{ total_skip_days }}</h3>
     </div>
@@ -118,6 +127,7 @@
                     <th>Табельний номер</th>
                     <th>ПІБ працівника</th>
                     <th>Посада</th>
+                    <th>Відпрацьовані дні</th>
                     <th>Пропуски</th>
                     <th>Відпустка</th>
                     <th>Лікарняний</th>
@@ -141,6 +151,7 @@
                     </td>
 
                     <td>{{ worker.post }}</td>
+                    <td>{{ worker.total_work_days }}</td>
 
                     {% if worker.record_count %}
 
@@ -177,14 +188,14 @@
 
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="empty-state">
+                    <td colspan="9" class="empty-state">
                         Працівників немає.
                     </td>
                 </tr>
                 {% endfor %}
 
                 <tr id="search-no-results" hidden>
-                    <td colspan="8" class="empty-state">
+                    <td colspan="9" class="empty-state">
                         Працівників за вашим запитом не знайдено.
                     </td>
                 </tr>
@@ -192,14 +203,6 @@
         </table>
     </div>
     
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
 </div>
 
 <script src="{% static 'timesheet/js/timesheet_search.js' %}"></script>

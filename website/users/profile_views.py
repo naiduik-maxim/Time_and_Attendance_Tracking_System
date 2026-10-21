@@ -103,12 +103,7 @@ class ProfileView(LoginRequiredMixin, View):
 
         forms = {f"{action}_form": form}
 
-        print("Дія:", action)
-        print("Клас форми:", type(form).__name__)
-        print("Поля з помилками:", list(form.errors))
-        print("Email задано:", bool(user.email))
-        print("Пароль доступний:", user.has_usable_password())
-        
+
         if not form.is_valid():
             return self.reply(**forms, status=400)
 
@@ -128,7 +123,7 @@ class ProfileView(LoginRequiredMixin, View):
 
         if not cache.add(key, True, timeout=60):
             return self.reply(
-                **form,
+                **forms,
                 notice="Зачекайте хвилину перед повторним листом.",
                 status=429,
             )
@@ -175,33 +170,33 @@ class ProfileView(LoginRequiredMixin, View):
                 "надіслано на ваш email."
             )
 
-            body = (
-                f"{subject}\n\n"
-                f"{request.build_absolute_uri(path)}\n\n"
-                "Якщо ви не робили запит, проігноруйте лист."
+        body = (
+            f"{subject}\n\n"
+            f"{request.build_absolute_uri(path)}\n\n"
+            "Якщо ви не робили запит, проігноруйте лист."
+        )
+
+        try:
+            sent = send_mail(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [recipient],
             )
 
-            try:
-                sent = send_mail(
-                    subject,
-                    body,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [recipient],
-                )
+            if sent != 1:
+                raise OSError("Email was not sent")
 
-                if sent != 1:
-                    raise OSError("Email was not sent")
+        except (SMTPException, OSError):
+            cache.delete(key)
 
-            except (SMTPException, OSError):
-                cache.delete(key)
+            return self.reply(
+                **forms,
+                notice="Не вдалося надіслати лист. Спробуйте пізніше.",
+                status=503,
+            )
 
-                return self.reply(
-                    **forms,
-                    notice="Не вдалося надіслати лист. Спробуйте пізніше.",
-                    status=503,
-                )
-            
-            return self.reply(notice=notice)
+        return self.reply(notice=notice)
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -252,7 +247,7 @@ class ProfileEmailConfirmView(LoginRequiredMixin, View):
                 )
 
             elif (
-                User.objects.filter(email_iexavt=data['email'])
+                User.objects.filter(email__iexact=data['email'])
                 .exclude(pk=user.pk)
                 .exists()
             ):

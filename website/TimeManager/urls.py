@@ -23,5 +23,4 @@ urlpatterns = [
     path('document/', include('documents.urls')),
     path('timesheets/', include('timesheets.urls')),
     path('unit/', include('unit.urls')),
-    path('worker/', include('workers.urls'))
 ]

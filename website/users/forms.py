@@ -8,7 +8,7 @@ class PasswordLinkForm(forms.Form):
 
 class CurrentPasswordForm(forms.Form):
     current_password = forms.CharField(
-        label="Поточгий пароль",
+        label="Поточний пароль",
         widget=forms.PasswordInput(
             attrs={'autocomplete': 'current_password'}
         ),

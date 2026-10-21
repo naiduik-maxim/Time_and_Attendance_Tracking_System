@@ -3,14 +3,20 @@
 {% block title %}Структура підрозділів{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2>Підрозділи компанії</h2>
+<div class="page-header">
+    <div>
+        <h1>Підрозділи компанії</h1>
+        <p class="page-subtitle">Структура та працівники організації</p>
+    </div>
     
-    {% if user.is_superuser or 'Managers' in user.groups.all|stringformat:"s" %}
-        <a href="{% url 'unit_create' %}" class="btn" style="background-color: var(--success-color);">+ Додати підрозділ</a>
+    {% if can_manage_units %}
+        <div class="form-actions">
+            <a href="{% url 'manager_dashboard' %}" class="btn">Кабінет менеджера</a>
+        </div>
     {% endif %}
 </div>
 
+<div class="table-wrapper">
 <table>
     <thead>
         <tr>
@@ -28,9 +34,10 @@
             </tr>
         {% empty %}
             <tr>
-                <td colspan="3" style="text-align: center;">Підрозділи ще не створені.</td>
+                <td colspan="3" class="empty-state">Підрозділи ще не створені.</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}
